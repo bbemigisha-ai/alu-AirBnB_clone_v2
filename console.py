@@ -40,38 +40,48 @@ class HBNBCommand(cmd.Cmd):
         if not arg:
             print("** class name missing **")
             return
-
-        if arg not in ["BaseModel", "User", "State", "City",
-                       "Amenity", "Place", "Review"]:
-            print("** class doesn't exist **")
-            return
-
+        
+        args = shlex.split(arg)
+        class_name = args[0]
+        
         classes = {
             "BaseModel": BaseModel,
-        }
-
-        if arg == "User":
-            from models.user import User
-            classes["User"] = User
-        elif arg == "State":
-            from models.state import State
-            classes["State"] = State
-        elif arg == "City":
-            from models.city import City
-            classes["City"] = City
-        elif arg == "Amenity":
-            from models.amenity import Amenity
-            classes["Amenity"] = Amenity
-        elif arg == "Place":
-            from models.place import Place
-            classes["Place"] = Place
-        elif arg == "Review":
-            from models.review import Review
-            classes["Review"] = Review
-
-        new_instance = classes[arg]()
-        new_instance.save()
-        print(new_instance.id)
+            "User": User,
+            "State": State,
+            "City": City,
+            }
+        
+        if class_name not in classes:
+            print("** class doesn't exist **")
+            return
+        
+        instance = classes[class_name]()
+        
+        for item in args[1:]:
+            if "=" not in item:
+                continue
+            
+            key, value = item.split("=", 1)
+            
+            if value.startswith('"') and value.endswith('"'):
+                
+                value = value[1:-1].replace("_", " ")
+            else:
+                try:
+                    if "." in value:
+                        value = float(value)
+                    else:
+                        value = int(value)
+                except ValueError:
+                        pass
+                    
+            if hasattr(instance, key):
+                        setattr(instance, key, value)
+            else:
+                        setattr(instance, key, value)
+                        
+                        instance.save()
+                        print(instance.id)
 
     def do_show(self, arg):
         """Show an instance based on class name and id."""
